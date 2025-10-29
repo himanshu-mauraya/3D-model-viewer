@@ -2,12 +2,5 @@ services:
   - type: web
     name: 3d-model-viewer-backend
     env: node
-    rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
-
-  - type: static
-    name: 3d-model-viewer-frontend
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
