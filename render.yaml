@@ -1,0 +1,29 @@
+# Backend Service
+services:
+  - type: web
+    name: 3d-model-viewer-backend
+    env: node
+    buildCommand: cd 3d-model-viewer/backend && npm install
+    startCommand: cd 3d-model-viewer/backend && npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: 3d-model-viewer-db
+          property: connectionString
+    plan: free
+
+# Frontend Service
+  - type: web
+    name: 3d-model-viewer-frontend
+    env: node
+    buildCommand: |
+      cd 3d-model-viewer/frontend
+      npm install
+      npm run build
+    staticPublishPath: "./3d-model-viewer/frontend/dist"
+    envVars:
+      - key: VITE_API_URL
+        value: https://3d-model-viewer-backend.onrender.com
+    plan: free
