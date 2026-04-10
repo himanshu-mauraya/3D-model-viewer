@@ -2,7 +2,6 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   OrbitControls, 
   Environment, 
-  Stats,
   MeshDistortMaterial,
   Edges,
   Sparkles
@@ -226,6 +225,7 @@ const ArtisticShapes = forwardRef((props, ref) => {
   const [wireframeShape, setWireframeShape] = useState('icosahedron');
   const [gridSize, setGridSize] = useState(8);
   const controlsRef = useRef();
+  const [controlsVisible, setControlsVisible] = useState(true);
 
   const [lights, setLights] = useState({
     ambient: { enabled: true, intensity: 0.3, color: '#ffffff' },
@@ -267,7 +267,12 @@ const ArtisticShapes = forwardRef((props, ref) => {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {controlsVisible ? (
       <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000, background: 'rgba(0,0,0,0.85)', padding: '15px', borderRadius: '10px', maxHeight: '90vh', overflowY: 'auto', minWidth: '300px', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', background: 'linear-gradient(135deg, #00ffff, #ff00ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 'bold', paddingBottom: '10px', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>✨ Artistic Forms</h3>
+          <button onClick={() => setControlsVisible(false)} style={{background:'transparent',border:'none',color:'white',cursor:'pointer',fontSize:'12px'}}>Hide</button>
+        </div>
         <div>
           <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', background: 'linear-gradient(135deg, #00ffff, #ff00ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 'bold', paddingBottom: '10px', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>✨ Artistic Forms</h3>
           <p style={{ fontSize: '11px', color: '#999', margin: 0 }}>Showcasing Three.js power</p>
@@ -355,6 +360,9 @@ const ArtisticShapes = forwardRef((props, ref) => {
           </select>
         </div>
       </div>
+      ) : (
+        <button onClick={() => setControlsVisible(true)} style={{position:'absolute',top:'10px',right:'10px',zIndex:1000,padding:'6px 10px',fontSize:'12px',cursor:'pointer'}}>Show Controls</button>
+      )}
 
       <Canvas camera={{ position: [6, 6, 6], fov: 60 }} gl={{ antialias: true, alpha: true }} style={{ background: 'radial-gradient(circle at center, #0a0a1a 0%, #000000 100%)' }}>
         <Suspense fallback={null}>
@@ -364,7 +372,7 @@ const ArtisticShapes = forwardRef((props, ref) => {
           <ArtisticShape type={selectedShape} {...shapeProps[selectedShape]} />
           {environment && <Environment preset={environment} background={false} />}
           <CameraControls ref={controlsRef} />
-          <Stats />
+          {/* stats removed */}
         </Suspense>
       </Canvas>
     </div>

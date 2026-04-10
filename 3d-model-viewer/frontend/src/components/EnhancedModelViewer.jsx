@@ -3,7 +3,6 @@ import {
   OrbitControls, 
   Environment, 
   useGLTF, 
-  Stats, 
   useProgress,
   Html,
   useTexture,
@@ -149,6 +148,7 @@ const EnhancedModelViewer = ({
     emissive: '#000000',
     wireframe: false
   });
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [environment, setEnvironment] = useState('city');
   
   // Refs
@@ -294,32 +294,36 @@ const EnhancedModelViewer = ({
               cameraType={cameraType}
             />
             
-            {/* Stats */}
-            <Stats />
+            {/* stats removed */}
           </Suspense>
         </Canvas>
       </div>
       
-      {/* UI Controls */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        background: 'rgba(0,0,0,0.7)',
-        padding: '15px',
-        borderRadius: '8px',
-        color: 'white',
-        maxWidth: '300px',
-        maxHeight: '80vh',
-        overflowY: 'auto'
-      }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>3D Model Viewer</h3>
-        
-        {/* Camera Controls */}
+      {/* UI Controls (toggleable) */}
+      {controlsVisible ? (
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          background: 'rgba(0,0,0,0.7)',
+          padding: '15px',
+          borderRadius: '8px',
+          color: 'white',
+          maxWidth: '300px',
+          maxHeight: '80vh',
+          overflowY: 'auto'
+        }}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <h3 style={{ margin: '0 0 10px 0' }}>3D Model Viewer</h3>
+            <button onClick={() => setControlsVisible(false)} style={{background:'transparent',border:'none',color:'white',cursor:'pointer',fontSize:'12px'}}>Hide</button>
+          </div>
+          
+          {/* Camera Controls */}
+      
         <div>
           <h4>Camera</h4>
           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
@@ -426,6 +430,11 @@ const EnhancedModelViewer = ({
           </div>
         </div>
         
+        {/* Environment Selector */}
+      </div>
+      ) : (
+        <button onClick={() => setControlsVisible(true)} style={{position:'absolute',top:'10px',left:'10px',zIndex:10,padding:'6px 10px',fontSize:'12px',cursor:'pointer'}}>Show Controls</button>
+      )}
         {/* Environment Selector */}
         <div>
           <h4>Environment</h4>

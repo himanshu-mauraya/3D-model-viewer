@@ -11,6 +11,7 @@ import {
   useCallback, 
   useImperativeHandle 
 } from 'react';
+import BuiltinModel from './BuiltinModel';
 
 // OBJ Model Component - Simplified and working
 const OBJModel = forwardRef(({ url, scale = 1, onMaterialUpdate }, ref) => {
@@ -303,12 +304,13 @@ const CameraControls = forwardRef(({ onUpdate }, ref) => {
 
 CameraControls.displayName = 'CameraControls';
 
-const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterialsLoaded, artisticMaterialType = 'standard', materials: propMaterials = {}, onResetScene }, ref) => {
+const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterialsLoaded, artisticMaterialType = 'standard', materials: propMaterials = {}, onResetScene, builtinType }, ref) => {
   const [materials, setMaterials] = useState({});
   const [cameraType, setCameraType] = useState('perspective');
   const [showGizmo, setShowGizmo] = useState(false);
   const [gizmoMode, setGizmoMode] = useState('translate');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const modelRef = useRef();
   const controlsRef = useRef();
   const sceneRef = useRef();
@@ -474,7 +476,8 @@ const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterial
 
   return (
     <div ref={containerRef} className="model-viewer" style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {/* Controls Panel */}
+      {/* Controls Panel - Toggleable */}
+      {controlsVisible ? (
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -492,7 +495,7 @@ const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterial
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         border: '1px solid rgba(99, 102, 241, 0.3)'
       }}>
-        {/* Header */}
+        {/* Header with Hide button */}
         <div style={{ 
           fontSize: '18px', 
           fontWeight: 'bold', 
@@ -501,9 +504,30 @@ const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterial
           paddingBottom: '10px',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           gap: '8px'
         }}>
-          🎮 3D Controls
+          <span>🎮 3D Controls</span>
+          <button 
+            onClick={() => setControlsVisible(false)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#fff'}
+            onMouseLeave={(e) => e.target.style.color = '#94a3b8'}
+            title="Hide controls"
+          >
+            ×
+          </button>
         </div>
 
         {/* Reset Scene Button */}
@@ -661,6 +685,33 @@ const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterial
           <div>• Use mouse to orbit, zoom, and pan</div>
         </div>
       </div>
+      ) : (
+        <button 
+          onClick={() => setControlsVisible(true)}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            zIndex: 1000,
+            padding: '10px 14px',
+            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            transition: 'all 0.2s',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(99, 102, 241, 1)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(99, 102, 241, 0.8)'}
+          title="Show controls"
+        >
+          🎮 Show Controls
+        </button>
+      )}
 
       {/* 3D Canvas */}
       <div style={{ width: '100%', height: '100%' }}>
@@ -688,6 +739,8 @@ const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterial
         }}
       >
         <Suspense fallback={null}>
+          {/* dark navy background for built‑in wireframe logo */}
+          {builtinType === 'wireframeLogo' && <color attach="background" args={["#0F172A"]} />}
           {/* Environment for reflections (glass and metallic materials) */}
           <Environment preset="city" background={false} />
           
@@ -699,7 +752,13 @@ const ModelViewer = forwardRef(({ modelUrl, fileName, onCameraUpdate, onMaterial
           {/* Grid Helper */}
           <gridHelper args={[20, 20, '#444444', '#222222']} />
           
-          {modelUrl && (
+          {/* Render builtin model or uploaded model */}
+          {builtinType ? (
+            <BuiltinModel 
+              type={builtinType} 
+              materialType={artisticMaterialType}
+            />
+          ) : modelUrl && (
             <Suspense fallback={
               <mesh>
                 <boxGeometry args={[1, 1, 1]} />

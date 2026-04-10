@@ -2,7 +2,6 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   OrbitControls, 
   Environment, 
-  Stats,
   MeshDistortMaterial,
   MarchingCubes,
   MarchingCube,
@@ -294,11 +293,13 @@ CameraControls.displayName = 'CameraControls';
 
 // Main Component
 const AdvancedShapes = forwardRef((props, ref) => {
+  const { artisticMaterialType } = props;
   const [mode, setMode] = useState('generator'); // gallery, generator, parametric, metaballs, instanced
   const [shapeColor, setShapeColor] = useState('#4a90e2');
   const [materialType, setMaterialType] = useState('solid');
   const [environment, setEnvironment] = useState('city');
   const controlsRef = useRef();
+  const [controlsVisible, setControlsVisible] = useState(true);
 
   // Generator settings
   const [genType, setGenType] = useState('sphere');
@@ -359,7 +360,8 @@ const AdvancedShapes = forwardRef((props, ref) => {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {/* Controls Panel */}
+      {/* Controls Panel (toggleable) */}
+      {controlsVisible ? (
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -375,6 +377,12 @@ const AdvancedShapes = forwardRef((props, ref) => {
         border: '1px solid rgba(74, 144, 226, 0.3)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
       }}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#4a90e2', fontWeight: 'bold', paddingBottom: '10px', borderBottom: '2px solid rgba(74, 144, 226, 0.3)' }}>
+            🚀 Advanced Shapes
+          </h3>
+          <button onClick={() => setControlsVisible(false)} style={{background:'transparent',border:'none',color:'white',cursor:'pointer',fontSize:'12px'}}>Hide</button>
+        </div>
         <div>
           <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#4a90e2', fontWeight: 'bold', paddingBottom: '10px', borderBottom: '2px solid rgba(74, 144, 226, 0.3)' }}>
             🚀 Advanced Shapes
@@ -506,6 +514,9 @@ const AdvancedShapes = forwardRef((props, ref) => {
           </select>
         </div>
       </div>
+      ) : (
+        <button onClick={() => setControlsVisible(true)} style={{position:'absolute',top:'10px',right:'10px',zIndex:1000,padding:'6px 10px',fontSize:'12px',cursor:'pointer'}}>Show Controls</button>
+      )}
 
       {/* 3D Canvas */}
       <Canvas camera={{ position: [5, 5, 5], fov: 60 }} gl={{ antialias: true }} style={{ background: '#0a0a0a' }}>
@@ -514,8 +525,8 @@ const AdvancedShapes = forwardRef((props, ref) => {
           {lights.directional.enabled && <directionalLight position={lights.directional.position} intensity={lights.directional.intensity} color={lights.directional.color} castShadow />}
           {lights.point.enabled && <pointLight position={lights.point.position} intensity={lights.point.intensity} color={lights.point.color} castShadow />}
           
-          {mode === 'generator' && <GeneratedShape type={genType} height={height} radius={radius} segments={segments} color={shapeColor} materialType={materialType} />}
-          {mode === 'parametric' && <ParametricShape formula={formula} segments={segments} color={shapeColor} materialType={materialType} />}
+          {mode === 'generator' && <GeneratedShape type={genType} height={height} radius={radius} segments={segments} color={shapeColor} materialType={artisticMaterialType || materialType} />}
+          {mode === 'parametric' && <ParametricShape formula={formula} segments={segments} color={shapeColor} materialType={artisticMaterialType || materialType} />}
           {mode === 'metaballs' && <Metaballs strength={strength} subtract={subtract} color={shapeColor} metalness={0.8} />}
           {mode === 'instanced' && <InstancedSpheres count={instanceCount} spread={spread} color={shapeColor} />}
           
@@ -524,7 +535,7 @@ const AdvancedShapes = forwardRef((props, ref) => {
           
           {environment && <Environment preset={environment} background={false} />}
           <CameraControls ref={controlsRef} />
-          <Stats />
+          {/* stats removed */}
         </Suspense>
       </Canvas>
     </div>

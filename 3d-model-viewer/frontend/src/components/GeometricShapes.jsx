@@ -2,7 +2,6 @@ import { Canvas } from '@react-three/fiber';
 import { 
   OrbitControls, 
   Environment, 
-  Stats,
   PerspectiveCamera
 } from '@react-three/drei';
 import { 
@@ -16,7 +15,7 @@ import {
 import * as THREE from 'three';
 
 // Geometric shape component
-const GeometricShape = ({ shape, color, wireframe, metalness, roughness }) => {
+const GeometricShape = ({ shape, color, wireframe, metalness, roughness, artisticMaterialType }) => {
   const meshRef = useRef();
   
   const getGeometry = () => {
@@ -35,24 +34,100 @@ const GeometricShape = ({ shape, color, wireframe, metalness, roughness }) => {
         return <torusGeometry args={[1.2, 0.4, 16, 100]} />;
       case 'pyramid':
         return <coneGeometry args={[1.5, 2.5, 4]} />;
+      case 'triangularPyramid':
+        return <tetrahedronGeometry args={[1.6, 0]} />;
+      case 'pentagonalPyramid':
+        return <cylinderGeometry args={[1, 0, 2.2, 5]} />;
+      case 'hexagonalPyramid':
+        return <cylinderGeometry args={[1, 0, 2.2, 6]} />;
       case 'triangularPrism':
         return <cylinderGeometry args={[1, 1, 2, 3]} />;
+      case 'rectangularPrism':
+        return <boxGeometry args={[3, 1.5, 2]} />;
+      case 'pentagonalPrism':
+        return <cylinderGeometry args={[1, 1, 2, 5]} />;
       case 'hexagonalPrism':
         return <cylinderGeometry args={[1, 1, 2, 6]} />;
+      case 'hemisphere':
+        return <sphereGeometry args={[1.5, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} />;
+      case 'ellipsoid':
+        return <sphereGeometry args={[1.0, 32, 32]} />;
+      case 'paraboloid':
+        return <parametricGeometry args={[(u, v, target) => {
+          const x = (u - 0.5) * 2;
+          const y = (v) * 2;
+          const z = x * x + y * y;
+          target.set(x, y, z);
+        }, 32, 32]} />;
+      case 'tetrahedron':
+        return <tetrahedronGeometry args={[1.5, 0]} />;
+      case 'octahedron':
+        return <octahedronGeometry args={[1.5, 0]} />;
+      case 'dodecahedron':
+        return <dodecahedronGeometry args={[1.5, 0]} />;
+      case 'icosahedron':
+        return <icosahedronGeometry args={[1.5, 0]} />;
+      case 'mobius':
+        return <parametricGeometry args={[(u, t, target) => {
+          const U = u * Math.PI * 2;
+          const T = (t - 0.5) * 2;
+          const major = 1.2;
+          const x = (major + (T / 2) * Math.cos(U / 2)) * Math.cos(U);
+          const y = (major + (T / 2) * Math.cos(U / 2)) * Math.sin(U);
+          const z = (T / 2) * Math.sin(U / 2);
+          target.set(x, y, z);
+        }, 64, 16]} />;
+      case 'helix':
+        return <torusKnotGeometry args={[0.8, 0.2, 128, 16, 2, 3]} />;
+      case 'frustum':
+        return <cylinderGeometry args={[1, 0.6, 1.6, 32]} />;
+      case 'capsule':
+        return <capsuleGeometry args={[0.6, 1.0, 4, 8]} />;
+      case 'hyperboloid':
+        return <parametricGeometry args={[(u, v, target) => {
+          const s = (u - 0.5) * 2;
+          const t = (v - 0.5) * 2;
+          const a = 0.6, b = 0.6, c = 1.0;
+          const x = a * Math.cosh(s) * Math.cos(t);
+          const y = b * Math.cosh(s) * Math.sin(t);
+          const z = c * Math.sinh(s);
+          target.set(x, y, z);
+        }, 32, 32]} />;
       default:
         return <boxGeometry args={[2, 2, 2]} />;
+    }
+  };
+
+  const getMaterial = () => {
+    const base = {
+      color: color,
+      metalness: metalness,
+      roughness: roughness,
+      wireframe: wireframe
+    };
+
+    switch (artisticMaterialType) {
+      case 'wireframe':
+        return <meshBasicMaterial color={color} wireframe />;
+      case 'metallic':
+        return <meshStandardMaterial color={color} metalness={1.0} roughness={0.1} />;
+      case 'neon':
+        return <meshStandardMaterial color={color} emissive={new THREE.Color(0x00D9FF)} emissiveIntensity={2.0} toneMapped={false} wireframe />;
+      case 'crystal':
+        return <meshStandardMaterial color={color} flatShading metalness={0.8} roughness={0.2} />;
+      case 'glass':
+        return <meshPhysicalMaterial color={color} transparent transmission={1.0} opacity={0.35} roughness={0.0} metalness={0.0} clearcoat={1.0} />;
+      case 'toon':
+        return <meshStandardMaterial color={color} flatShading />;
+      default:
+        return <meshStandardMaterial {...base} />;
     }
   };
 
   return (
     <mesh ref={meshRef} castShadow receiveShadow>
       {getGeometry()}
-      <meshStandardMaterial 
-        color={color}
-        wireframe={wireframe}
-        metalness={metalness}
-        roughness={roughness}
-      />
+      {getMaterial()}
     </mesh>
   );
 };
@@ -86,6 +161,7 @@ CameraControls.displayName = 'CameraControls';
 
 // Main GeometricShapes component
 const GeometricShapes = forwardRef((props, ref) => {
+  const { artisticMaterialType = 'standard' } = props;
   const [selectedShape, setSelectedShape] = useState('cube');
   const [shapeColor, setShapeColor] = useState('#4a90e2');
   const [wireframe, setWireframe] = useState(false);
@@ -93,6 +169,7 @@ const GeometricShapes = forwardRef((props, ref) => {
   const [roughness, setRoughness] = useState(0.5);
   const [environment, setEnvironment] = useState('city');
   const controlsRef = useRef();
+  const [controlsVisible, setControlsVisible] = useState(true);
 
   // Lighting state
   const [lights, setLights] = useState({
@@ -122,9 +199,26 @@ const GeometricShapes = forwardRef((props, ref) => {
     { value: 'cylinder', label: 'Cylinder', description: 'Circular base, straight height' },
     { value: 'cone', label: 'Cone', description: 'Circular base, pointed top' },
     { value: 'torus', label: 'Torus', description: 'Donut shape' },
-    { value: 'pyramid', label: 'Pyramid', description: 'Polygon base + triangular faces' },
-    { value: 'triangularPrism', label: 'Triangular Prism', description: 'Elongated shape with triangle bases' },
-    { value: 'hexagonalPrism', label: 'Hexagonal Prism', description: 'Elongated shape with hexagon bases' }
+    { value: 'pyramid', label: 'Square Pyramid', description: 'Square base + triangular faces' },
+    { value: 'triangularPyramid', label: 'Triangular Pyramid (Tetrahedron)', description: '3-sided pyramid (tetrahedron)' },
+    { value: 'pentagonalPyramid', label: 'Pentagonal Pyramid', description: '5-sided pyramid' },
+    { value: 'hexagonalPyramid', label: 'Hexagonal Pyramid', description: '6-sided pyramid' },
+    { value: 'triangularPrism', label: 'Triangular Prism', description: 'Triangular prism' },
+    { value: 'rectangularPrism', label: 'Rectangular Prism', description: 'Rectangular prism (cuboid)' },
+    { value: 'pentagonalPrism', label: 'Pentagonal Prism', description: 'Pentagonal prism' },
+    { value: 'hexagonalPrism', label: 'Hexagonal Prism', description: 'Hexagonal prism' },
+    { value: 'hemisphere', label: 'Hemisphere', description: 'Half-sphere' },
+    { value: 'ellipsoid', label: 'Ellipsoid', description: 'Stretched sphere' },
+    { value: 'paraboloid', label: 'Paraboloid', description: 'Paraboloid surface' },
+    { value: 'tetrahedron', label: 'Tetrahedron', description: 'Regular tetrahedron' },
+    { value: 'octahedron', label: 'Octahedron', description: 'Regular octahedron' },
+    { value: 'dodecahedron', label: 'Dodecahedron', description: 'Regular dodecahedron' },
+    { value: 'icosahedron', label: 'Icosahedron', description: 'Regular icosahedron' },
+    { value: 'mobius', label: 'Möbius Strip', description: 'Non-orientable surface' },
+    { value: 'helix', label: 'Helix', description: '3D spiral' },
+    { value: 'frustum', label: 'Frustum', description: 'Cut cone/pyramid' },
+    { value: 'capsule', label: 'Capsule', description: 'Cylinder with rounded ends' },
+    { value: 'hyperboloid', label: 'Hyperboloid', description: 'Hyperboloid surface' }
   ];
 
   // View presets
@@ -162,7 +256,8 @@ const GeometricShapes = forwardRef((props, ref) => {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {/* Controls Panel */}
+      {/* Controls Panel (toggleable) */}
+      {controlsVisible ? (
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -179,12 +274,14 @@ const GeometricShapes = forwardRef((props, ref) => {
         minWidth: '280px',
         color: 'white'
       }}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #4a90e2', paddingBottom: '8px' }}>
+          🔷 Geometric Shapes
+        </h3>
+        <button onClick={() => setControlsVisible(false)} style={{background:'transparent',border:'none',color:'white',cursor:'pointer',fontSize:'12px'}}>Hide</button>
+      </div>
         {/* Shape Selection */}
         <div>
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #4a90e2', paddingBottom: '8px' }}>
-            🔷 Geometric Shapes
-          </h3>
-          
           <div style={{ marginBottom: '15px' }}>
             <label style={{ fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '8px' }}>
               Select Shape
@@ -427,6 +524,9 @@ const GeometricShapes = forwardRef((props, ref) => {
           </select>
         </div>
       </div>
+      ) : (
+        <button onClick={() => setControlsVisible(true)} style={{position:'absolute',top:'10px',right:'10px',zIndex:1000,padding:'6px 10px',fontSize:'12px',cursor:'pointer'}}>Show Controls</button>
+      )}
 
       {/* 3D Canvas */}
       <Canvas
@@ -470,6 +570,7 @@ const GeometricShapes = forwardRef((props, ref) => {
             wireframe={wireframe}
             metalness={metalness}
             roughness={roughness}
+            artisticMaterialType={artisticMaterialType}
           />
           
           {/* Grid Helper */}
@@ -484,8 +585,7 @@ const GeometricShapes = forwardRef((props, ref) => {
           {/* Environment */}
           {environment && <Environment preset={environment} background={false} />}
           
-          {/* Performance Stats */}
-          <Stats />
+          {/* stats removed */}
         </Suspense>
       </Canvas>
     </div>

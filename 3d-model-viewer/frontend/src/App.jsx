@@ -2,15 +2,18 @@ import { useState, useRef, useCallback } from 'react';
 import { SceneProvider, useScene } from './context/SceneContext';
 import ModelViewer from './components/ModelViewer';
 import ModelUploader from './components/ModelUploader';
+import BuiltinModel from './components/BuiltinModel';
 import GeometricShapes from './components/GeometricShapes';
 import ArtisticShapes from './components/ArtisticShapes';
 import AdvancedShapes from './components/AdvancedShapes';
+import RotatingCubeLogo from './components/RotatingCubeLogo';
 import './App.css';
 
 function AppContent() {
   const { scenes, currentScene, addScene, updateScene, removeScene, clearScenes, setCurrentScene } = useScene();
   const [activeTab, setActiveTab] = useState('models');
   const [artisticMaterialType, setArtisticMaterialType] = useState('standard');
+  const [shapesMode, setShapesMode] = useState('basic'); // 'basic' or 'advanced'
   const [addReplaceMode, setAddReplaceMode] = useState('replace'); // 'add' or 'replace'
   const modelRef = useRef();
 
@@ -67,9 +70,15 @@ function AppContent() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <div className="app-header">
-          <h1>3D Visualizer</h1>
-          <p>Professional 3D Rendering</p>
+        <div className="app-header" style={{display:'flex',alignItems:'center',gap:'12px'}}>
+          {/* Rotating 3D wireframe cube logo */}
+          <div className="logo" style={{width:44,height:44,background:'#0F172A',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',padding:'4px'}}>
+            <RotatingCubeLogo size={36} strokeColor="#4A90E2" strokeWidth={1.2} />
+          </div>
+          <div>
+            <h1>3D Visualizer</h1>
+            <p>Professional 3D Rendering</p>
+          </div>
         </div>
         <div className="tabs">
           <button 
@@ -83,25 +92,6 @@ function AppContent() {
             onClick={() => setActiveTab('shapes')}
           >
             Shapes
-          </button>
-          <button 
-            className={activeTab === 'artistic' ? 'active' : ''}
-            onClick={() => setActiveTab('artistic')}
-          >
-            Artistic
-          </button>
-          <button 
-            className={activeTab === 'advanced' ? 'active' : ''}
-            onClick={() => setActiveTab('advanced')}
-          >
-            Advanced
-          </button>
-          <button 
-            className={activeTab === 'materials' ? 'active' : ''}
-            onClick={() => setActiveTab('materials')}
-            disabled={!currentScene}
-          >
-            Materials
           </button>
         </div>
 
@@ -177,6 +167,37 @@ function AppContent() {
               </div>
 
               <ModelUploader onModelLoaded={handleModelLoaded} />
+
+              {/* Artistic Material Picker for Models */}
+              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(74,144,226,0.06)', borderRadius: '8px', border: '1px solid rgba(74,144,226,0.12)' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>✨ Artistic Material Style</label>
+                <select value={artisticMaterialType} onChange={(e) => setArtisticMaterialType(e.target.value)} style={{ width: '100%', marginTop: '8px', padding: '10px', backgroundColor: 'var(--bg-dark)', color: 'white', borderRadius: '6px' }}>
+                  <option value="standard" style={{ color: 'black' }}>Standard PBR</option>
+                  <option value="wireframe" style={{ color: 'black' }}>Wireframe</option>
+                  <option value="metallic" style={{ color: 'black' }}>Liquid Metal</option>
+                  <option value="neon" style={{ color: 'black' }}>Neon Glow</option>
+                  <option value="crystal" style={{ color: 'black' }}>Crystal / Low Poly</option>
+                  <option value="glass" style={{ color: 'black' }}>Liquid Glass</option>
+                  <option value="toon" style={{ color: 'black' }}>Toon Shader</option>
+                </select>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>This style will be applied to uploaded models immediately.</p>
+              </div>
+
+              {/* Quick Presets / Templates */}
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={() => addScene({ name: 'Wireframe Logo', builtin: true, builtinType: 'wireframeLogo', artisticMaterialType })}
+                  style={{ flex: 1, padding: '10px', background: '#111827', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Demo: Wireframe Logo
+                </button>
+                <button
+                  onClick={() => addScene({ name: 'Sample Shapes', builtin: true, builtinType: 'sampleShapes', artisticMaterialType })}
+                  style={{ flex: 1, padding: '10px', background: '#111827', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Sample Shapes
+                </button>
+              </div>
               
               {scenes.length > 0 ? (
                 <div>
@@ -230,50 +251,38 @@ function AppContent() {
             </>
           ) : activeTab === 'shapes' ? (
             <div className="shapes-info">
-              <h3>🔷 Geometric Shapes</h3>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
-                Perfect for learning, demos, and physics simulation
-              </p>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div className="shape-info-card">
-                  <strong>Cube</strong>
-                  <p>Equal length on all sides</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3>🔷 Shapes</h3>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <label style={{ fontSize: '12px', color: '#aaa' }}>Basic</label>
+                  <button onClick={() => setShapesMode('basic')} style={{ padding: '6px 10px', background: shapesMode === 'basic' ? '#6366f1' : '#333', color: 'white', borderRadius: '6px' }}>Shapes</button>
+                  <button onClick={() => setShapesMode('advanced')} style={{ padding: '6px 10px', background: shapesMode === 'advanced' ? '#6366f1' : '#333', color: 'white', borderRadius: '6px' }}>Advanced</button>
                 </div>
-                <div className="shape-info-card">
-                  <strong>Cuboid</strong>
-                  <p>Box shape with unequal sides</p>
-                </div>
-                <div className="shape-info-card">
-                  <strong>Sphere</strong>
-                  <p>Perfect round ball</p>
-                </div>
-                <div className="shape-info-card">
-                  <strong>Cylinder</strong>
-                  <p>Circular base, straight height</p>
-                </div>
-                <div className="shape-info-card">
-                  <strong>Cone</strong>
-                  <p>Circular base, pointed top</p>
-                </div>
-                <div className="shape-info-card">
-                  <strong>Torus</strong>
-                  <p>Donut shape</p>
-                </div>
-                <div className="shape-info-card">
-                  <strong>Pyramid</strong>
-                  <p>Polygon base + triangular faces</p>
-                </div>
-                <div className="shape-info-card">
-                  <strong>Prisms</strong>
-                  <p>Triangular/Hexagonal - Elongated shape with polygon bases</p>
-                </div>
+              </div>
+
+              <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(0,0,0,0.35)', borderRadius: '8px' }}>
+                <p style={{ fontSize: '13px', color: 'rgb(32, 31, 31)', margin: 0 }}>Pick from basic geometric shapes or switch to advanced shapes which include parametric and shader-driven options.</p>
+              </div>
+
+              {/* Artistic Material Picker for Shapes */}
+              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(99,102,241,0.06)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.12)' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>✨ Artistic Material Style</label>
+                <select value={artisticMaterialType} onChange={(e) => setArtisticMaterialType(e.target.value)} style={{ width: '100%', marginTop: '8px', padding: '10px', backgroundColor: 'var(--bg-dark)', color: 'white', borderRadius: '6px' }}>
+                  <option value="standard" style={{ color: 'black' }}>Standard PBR</option>
+                  <option value="wireframe" style={{ color: 'black' }}>Wireframe</option>
+                  <option value="metallic" style={{ color: 'black' }}>Liquid Metal</option>
+                  <option value="neon" style={{ color: 'black' }}>Neon Glow</option>
+                  <option value="crystal" style={{ color: 'black' }}>Crystal / Low Poly</option>
+                  <option value="glass" style={{ color: 'black' }}>Liquid Glass</option>
+                  <option value="toon" style={{ color: 'black' }}>Toon Shader</option>
+                </select>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>This style will be applied to all shapes in the canvas.</p>
               </div>
             </div>
           ) : activeTab === 'artistic' ? (
             <div className="shapes-info">
               <h3>✨ Artistic Forms</h3>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
+              <p style={{ fontSize: '13px', color: '#877c7c', marginBottom: '15px' }}>
                 Great for showcasing Three.js power
               </p>
               
@@ -360,13 +369,13 @@ function AppContent() {
                           });
                         }}
                       >
-                        <option value="standard">⚪ Standard PBR</option>
-                        <option value="wireframe">🕸️ Wireframe</option>
-                        <option value="metallic">⚙️ Liquid Metal</option>
-                        <option value="neon">🌟 Neon Glow (Wireframe + Glow)</option>
-                        <option value="crystal">💎 Crystal/Low Poly</option>
-                        <option value="glass">🔵 Liquid Glass (Apple-style)</option>
-                        <option value="toon">🎨 Toon Shader</option>
+                        <option value="standard" style={{ color: 'black' }}>⚪ Standard PBR</option>
+                        <option value="wireframe" style={{ color: 'black' }}>🕸️ Wireframe</option>
+                        <option value="metallic" style={{ color: 'black' }}>⚙️ Liquid Metal</option>
+                        <option value="neon" style={{ color: 'black' }}>🌟 Neon Glow (Wireframe + Glow)</option>
+                        <option value="crystal" style={{ color: 'black' }}>💎 Crystal/Low Poly</option>
+                        <option value="glass" style={{ color: 'black' }}>🔵 Liquid Glass (Apple-style)</option>
+                        <option value="toon" style={{ color: 'black' }}>🎨 Toon Shader</option>
                       </select>
                       <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', lineHeight: '1.5' }}>
                         <strong>✨ Neon Glow:</strong> Colored wireframe with emissive glow<br/>
@@ -456,11 +465,11 @@ function AppContent() {
 
       <main className="viewer-container">
         {activeTab === 'shapes' ? (
-          <GeometricShapes />
-        ) : activeTab === 'artistic' ? (
-          <ArtisticShapes />
-        ) : activeTab === 'advanced' ? (
-          <AdvancedShapes />
+          shapesMode === 'basic' ? (
+            <GeometricShapes artisticMaterialType={artisticMaterialType} />
+          ) : (
+            <AdvancedShapes artisticMaterialType={artisticMaterialType} />
+          )
         ) : currentScene ? (
           <ModelViewer 
             modelUrl={currentScene.url}
@@ -469,11 +478,15 @@ function AppContent() {
             onCameraUpdate={handleCameraUpdate}
             onMaterialsLoaded={handleMaterialsLoaded}
             onResetScene={handleResetScene}
-            artisticMaterialType={currentScene.artisticMaterialType || 'standard'}
+            artisticMaterialType={artisticMaterialType}
             materials={currentScene.materials || {}}
+            builtinType={currentScene.builtinType}
           />
         ) : (
           <div className="empty-state">
+            <div className="empty-state-logo">
+              <RotatingCubeLogo size={100} strokeColor="#4A90E2" strokeWidth={2} />
+            </div>
             <p>Upload a 3D model to get started</p>
           </div>
         )}

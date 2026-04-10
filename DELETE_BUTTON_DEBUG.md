@@ -201,8 +201,8 @@ window.confirm('Are you sure?')
 ```css
 /* Delete Button Styling */
 .delete-btn {
-  background: rgba(239, 68, 68, 0.2) !important;
-  border: 2px solid rgba(239, 68, 68, 0.4) !important;
+  background: rgb(239, 68, 68, 0.2) !important;
+  border: 2px solid rgb(239, 68, 68, 0.4) !important;
   color: #ef4444 !important;
   padding: 6px 12px !important;
   border-radius: var(--radius-md) !important;
@@ -216,10 +216,10 @@ window.confirm('Are you sure?')
 }
 
 .delete-btn:hover {
-  background: rgba(239, 68, 68, 0.4) !important;
+  background: rgb(239, 68, 68, 0.4) !important;
   border-color: #ef4444 !important;
   transform: scale(1.05) !important;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 4px 12px rgb(239, 68, 68, 0.4) !important;
 }
 
 /* Visibility Control */
