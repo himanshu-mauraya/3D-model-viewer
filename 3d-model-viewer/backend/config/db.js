@@ -12,14 +12,14 @@ const connectDB = async () => {
       process.exit(1);
     }
     
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
+    console.error('\n⚠️ WARNING: Database connection failed!');
+    console.error('⚠️ Your MongoDB cluster may be deleted or paused (ENOTFOUND).');
+    console.error('⚠️ The server will continue running, but database features will return 500 errors.');
+    console.error('Error details:', error.message);
+    // process.exit(1); -> Removed to allow the server to boot even if DB is dead
   }
 };
 
