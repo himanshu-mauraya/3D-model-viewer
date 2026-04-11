@@ -1,9 +1,0 @@
-{
-  "name": "3d-model-viewer-root",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "cd backend && yarn install",
-    "start": "cd backend && yarn start"
-  }
-}
