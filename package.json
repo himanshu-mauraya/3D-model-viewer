@@ -1,10 +1,16 @@
 {
-  "name": "mongo-test",
+  "name": "3d-model-viewer-root",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "dependencies": {
     "dotenv": "^16.3.1",
     "mongodb": "^6.20.0",
     "mongoose": "^8.0.3"
+  },
+  "scripts": {
+    "build": "cd 3d-model-viewer/backend && yarn install",
+    "postinstall": "cd 3d-model-viewer/backend && yarn install",
+    "start": "cd 3d-model-viewer/backend && yarn start"
   }
 }
